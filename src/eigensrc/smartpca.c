@@ -1274,6 +1274,25 @@ main (int argc, char **argv)
       }
     }
 
+    printf("+++++++++++++++++++ Clemens ++++++++++++++++++++++++\n");
+    printf("numeigs: %d\n", numeigs);
+    printf("numindivs: %d\n", numindivs);
+    printf("nrows: %d\n", nrows);
+    printf("ncols: %d\n", ncols);
+    printf("+++++++++++++++++++ Clemens ++++++++++++++++++++++++\n");
+
+    FILE * fp;
+    fp = fopen ("/home/schmid/agora/smartpca_projection/hu.txt","w");
+    fprintf(fp, "snp PC1 PC2 PC3 PC4 PC5 PC6 PC7 PC8 PC9 PC10\n");
+    for (i = 0; i < ncols; i++) {
+      fprintf(fp, "%s ", xsnplist[i]->ID);
+      for (j = 0; j < numeigs; j++) {
+        fprintf(fp, "%10.4f ", ffvecs[j * ncols + i]);
+      }
+      fprintf(fp, "\n");
+    }
+    fclose(fp);
+
     ZALLOC (eigkurt, numeigs, double);
     ZALLOC (eigindkurt, numeigs, double);
 
