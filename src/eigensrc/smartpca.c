@@ -191,6 +191,10 @@ int fastdim = -1;
 int fastiter = -1;
 int regmode = NO;
 
+//++++++++++++ Clemens +++++++++++++
+projmode = NO;
+//++++++++++++ Clemens +++++++++++++
+
 int numoutliter = 5, numoutleigs = 10, outliermode = 0;
 double outlthresh = 6.0;
 OUTLINFO **outinfo;
@@ -1263,35 +1267,61 @@ main (int argc, char **argv)
       printf ("## easymode set. end of smartpca run\n");
       return 0;
     }
-    for (i = 0; i < ncols; i++) {
-      cupt = xsnplist[i];
-      getcolxf (cc, cupt, xindex, nrows, i, NULL, NULL);
+    
+    // +++++++ Clemens ++++++++++
+    
+    if (!projmode) {
+        
+      for (i = 0; i < ncols; i++) {
+        cupt = xsnplist[i];
+        getcolxf (cc, cupt, xindex, nrows, i, NULL, NULL);
 
-      for (j = 0; j < numeigs; j++) {
-        for (k = 0; k < nrows; k++) {
-          ffvecs[j * ncols + i] += fvecs[j * nrows + k] * cc[k];
+        for (j = 0; j < numeigs; j++) {
+          for (k = 0; k < nrows; k++) {
+            ffvecs[j * ncols + i] += fvecs[j * nrows + k] * cc[k];
+          }
         }
       }
-    }
 
-    printf("+++++++++++++++++++ Clemens ++++++++++++++++++++++++\n");
-    printf("numeigs: %d\n", numeigs);
-    printf("numindivs: %d\n", numindivs);
-    printf("nrows: %d\n", nrows);
-    printf("ncols: %d\n", ncols);
-    printf("+++++++++++++++++++ Clemens ++++++++++++++++++++++++\n");
-
-    FILE * fp;
-    fp = fopen ("/home/schmid/agora/smartpca_projection/hu.txt","w");
-    fprintf(fp, "snp PC1 PC2 PC3 PC4 PC5 PC6 PC7 PC8 PC9 PC10\n");
-    for (i = 0; i < ncols; i++) {
-      fprintf(fp, "%s ", xsnplist[i]->ID);
-      for (j = 0; j < numeigs; j++) {
-        fprintf(fp, "%10.4f ", ffvecs[j * ncols + i]);
+      FILE * fp;
+      fp = fopen ("/home/schmid/agora/smartpca_projection/hu.txt","w");
+      // fprintf(fp, "snp PC1 PC2 PC3 PC4 PC5 PC6 PC7 PC8 PC9 PC10\n");
+      for (i = 0; i < ncols; i++) {
+        // fprintf(fp, "%s ", xsnplist[i]->ID);
+        for (j = 0; j < numeigs; j++) {
+          if (j != numeigs - 1) {
+            fprintf(fp, "%.4f ", ffvecs[j * ncols + i]);
+          } else {
+            fprintf(fp, "%.4f", ffvecs[j * ncols + i]);
+          }
+        }
+        fprintf(fp, "\n");
       }
-      fprintf(fp, "\n");
+      fclose(fp);
+  
+    } else {
+      
+      printf("+++++++++ Clemens ++++++++++++ -> projmode\n");
+      
+      char buffer[1000000];
+      char *value, *line;
+      int p3 = 0;
+      FILE *fstream_ffvecs = fopen("/home/schmid/agora/smartpca_projection/hu.txt", "r");
+      while ((line = fgets(buffer, sizeof(buffer), fstream_ffvecs)) != NULL) {
+        value = strtok(line, " ");
+        int p4 = 0;
+        while(value != NULL) {
+          ffvecs[p4 * ncols + p3] = atof(value);
+          value = strtok(NULL, " ");
+          p4++;
+        }
+        p3++;
+      }
+      fclose(fstream_ffvecs);
+      
     }
-    fclose(fp);
+    
+    // +++++++ Clemens ++++++++++
 
     ZALLOC (eigkurt, numeigs, double);
     ZALLOC (eigindkurt, numeigs, double);
@@ -1778,6 +1808,10 @@ readcommands (int argc, char **argv)
   getint (ph, "easymode:", &easymode);
   getint (ph, "seed:", &t);
   seed = (long) t;
+
+  // +++++++++++++++ Clemens +++++++++++++++++++
+  getint (ph, "projmode:", &projmode);
+  // +++++++++++++++ Clemens +++++++++++++++++++
 
   getint (ph, "fastmode:", &fastmode);
   getint (ph, "fastdim:", &fastdim);
