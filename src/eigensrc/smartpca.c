@@ -1270,7 +1270,7 @@ main (int argc, char **argv)
     
     // +++++++ Clemens ++++++++++
     
-    if (!projmode) {
+    //if (!projmode) {
         
       for (i = 0; i < ncols; i++) {
         cupt = xsnplist[i];
@@ -1289,37 +1289,56 @@ main (int argc, char **argv)
       for (i = 0; i < ncols; i++) {
         // fprintf(fp, "%s ", xsnplist[i]->ID);
         for (j = 0; j < numeigs; j++) {
-          if (j != numeigs - 1) {
-            fprintf(fp, "%.4f ", ffvecs[j * ncols + i]);
+          if (j != (numeigs - 1)) {
+            fprintf(fp, "%f ", ffvecs[j * ncols + i]);
           } else {
-            fprintf(fp, "%.4f", ffvecs[j * ncols + i]);
+            fprintf(fp, "%f", ffvecs[j * ncols + i]);
           }
         }
         fprintf(fp, "\n");
       }
       fclose(fp);
   
-    } else {
+    //} else {
       
       printf("+++++++++ Clemens ++++++++++++ -> projmode\n");
       
+      /*
+      for (i = 0; i < ncols; i++) {
+        cupt = xsnplist[i];
+        getcolxf (cc, cupt, xindex, nrows, i, NULL, NULL);
+      }
+      */
+      
+      double *ffvecs_test;
+      ZALLOC (ffvecs_test, ncols * numeigs, double);
+      
       char buffer[1000000];
       char *value, *line;
-      int p3 = 0;
+      int i = 0;
       FILE *fstream_ffvecs = fopen("/home/schmid/agora/smartpca_projection/hu.txt", "r");
       while ((line = fgets(buffer, sizeof(buffer), fstream_ffvecs)) != NULL) {
         value = strtok(line, " ");
-        int p4 = 0;
+        int j = 0;
         while(value != NULL) {
-          ffvecs[p4 * ncols + p3] = atof(value);
+          //printf("%d\n", round(ffvecs[j * ncols + i]) == round(atof(value)));
+          //printf("%f == %f\n", ffvecs[j * ncols + i], atof(value));
+          ffvecs_test[j * ncols + i] = atof(value);
           value = strtok(NULL, " ");
-          p4++;
+          j++;
         }
-        p3++;
+        i++;
       }
       fclose(fstream_ffvecs);
       
-    }
+      for (i = 0; i < ncols; i++) {
+        for (j = 0; j < numeigs; j++) {
+          //printf("%f == %f\n", ffvecs[j * ncols + i], ffvecs_test[j * ncols + i]);
+          ffvecs[j * ncols + i] = ffvecs_test[j * ncols + i];
+        }
+      }
+      
+    //}
     
     // +++++++ Clemens ++++++++++
 
